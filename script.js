@@ -174,21 +174,38 @@ function initContactForm(){
       return;
     }
 
-    // No backend is wired up yet — this simulates a successful send so
-    // the flow can be reviewed end to end. Replace with a real fetch()
-    // call to your form endpoint (Formspree, Netlify Forms, etc.) when
-    // one is ready.
-    const submitBtn = form.querySelector('button[type="submit"]');
-    submitBtn.disabled = true;
-    submitBtn.textContent = "Sending…";
+    // Builds a mailto: link and hands off to the visitor's own email
+    // client with everything pre-filled. There's no backend involved —
+    // the visitor still has to hit "send" in their mail app themselves.
+    const CONTACT_EMAIL = "gizemsquires@gmail.com";
 
-    setTimeout(() => {
-      status.textContent = "Thanks! Your message is on its way — I'll reply within a couple of days.";
-      status.classList.add("success");
-      submitBtn.disabled = false;
-      submitBtn.textContent = "Send message";
-      form.reset();
-    }, 700);
+    const name = form.elements.name.value.trim();
+    const email = form.elements.email.value.trim();
+    const brand = form.elements.brand.value.trim();
+    const budget = form.elements.budget.value;
+    const message = form.elements.message.value.trim();
+
+    const subject = brand
+      ? `UGC inquiry from ${brand}`
+      : `UGC inquiry from ${name}`;
+
+    const bodyLines = [
+      `Name: ${name}`,
+      `Email: ${email}`,
+      brand ? `Brand/company: ${brand}` : null,
+      budget ? `Budget: ${budget}` : null,
+      "",
+      message
+    ].filter(line => line !== null);
+
+    const mailtoUrl =
+      `mailto:${CONTACT_EMAIL}` +
+      `?subject=${encodeURIComponent(subject)}` +
+      `&body=${encodeURIComponent(bodyLines.join("\n"))}`;
+
+    status.textContent = "Opening your email app to send this along…";
+    status.classList.add("success");
+    window.location.href = mailtoUrl;
   });
 
   // clear individual field errors as the user fixes them
